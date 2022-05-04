@@ -43,6 +43,7 @@ namespace LV
         {
             horizontal = movementInput.x;
             vertical = movementInput.y;
+            moveAmount = horizontal + vertical;
             mouseX = cameraInput.x;
             mouseY = cameraInput.y;
         }
