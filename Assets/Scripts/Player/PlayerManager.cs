@@ -10,6 +10,7 @@ namespace LV
         private PlayerLocomotion playerLocomotion;
         private CameraHandler cameraHandler;
         private SoundHandler soundHandler;
+        private UIHandler uiHandler;
         private float delaySound;
         private void Awake()
         {
@@ -17,6 +18,8 @@ namespace LV
             cameraHandler = GetComponentInChildren<CameraHandler>();
             playerLocomotion = GetComponent<PlayerLocomotion>();
             soundHandler = GetComponent<SoundHandler>();
+            uiHandler = GetComponent<UIHandler>();
+            uiHandler.StartTaskBars();
             Cursor.visible = false;
         }
 
@@ -34,9 +37,13 @@ namespace LV
             playerLocomotion.PlayerMovement(inputHandler.horizontal, inputHandler.vertical);
 
             if (inputHandler.moveAmount != 0 && delaySound > 0.5)
-            {
+            {               
                 soundHandler.HandleWalkSound();
                 delaySound = 0;
+                if(soundHandler.surfaceType == 1)
+                {
+                    uiHandler.HandleTaskBar(2);
+                }
             }
         }
     }

@@ -11,6 +11,7 @@ namespace LV
         public float vertical;
         public float moveAmount;
         public bool interactFlag;
+        public bool taskFlag;
         private PlayerControls inputActions;       
         
         private Vector2 cameraInput;
@@ -37,6 +38,7 @@ namespace LV
         {
             MoveInput();
             InteractInput();
+            TaskInput();
         }
 
         private void MoveInput()
@@ -57,6 +59,18 @@ namespace LV
             else
             {
                 interactFlag = false;
+            }
+        }
+
+        private void TaskInput()
+        {
+            if (inputActions.PlayerActions.Task.inProgress)
+            {
+                taskFlag = true;
+            }
+            else
+            {
+                taskFlag = false;
             }
         }
     }

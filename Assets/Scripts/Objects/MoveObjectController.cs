@@ -17,14 +17,15 @@ namespace LV
 		private GUIStyle guiStyle;
 		private string msg;
 		private InputHandler inputHandler;
-
-	private int rayLayerMask;
-
+		private UIHandler uiHandler;
+		private int rayLayerMask;
+		private int rayLayerTask;		
 
 		void Start()
 		{
 			//Initialize moveDrawController if script is enabled.
 			player = GameObject.FindGameObjectWithTag("Player");
+			uiHandler = player.GetComponent<UIHandler>();
 			inputHandler = player.GetComponent<InputHandler>();
 			fpsCam = Camera.main;
 			if (fpsCam == null) //a reference to Camera is required for rayasts
@@ -38,7 +39,9 @@ namespace LV
 
 			//the layer used to mask raycast for interactable objects only
 			LayerMask iRayLM = LayerMask.NameToLayer("InteractRaycast");
+			LayerMask iRayLayerTask = LayerMask.NameToLayer("InteractTask");
 			rayLayerMask = 1 << iRayLM.value;
+			rayLayerTask = 1 << iRayLayerTask.value;
 
 			//setup GUI style settings for user prompts
 			setupGui();
@@ -65,10 +68,10 @@ namespace LV
 
 		private void Update()
 		{
-			interactionWithObject(inputHandler.interactFlag);
+			interactionWithObject(inputHandler.interactFlag, inputHandler.taskFlag);
 		}
 
-		private void interactionWithObject(bool interactFlag)
+		private void interactionWithObject(bool interactFlag, bool taskFlag)
 		{
 			if (playerEntered)
 			{
@@ -101,6 +104,40 @@ namespace LV
 							msg = getGuiMsg(!isOpen);
 						}
 
+					}
+				}
+				else if (Physics.Raycast(rayOrigin, fpsCam.transform.forward, out hit, reachRange, rayLayerTask))
+				{
+					MoveableObject moveableObject = null;
+					//is the object of the collider player is looking at the same as me?
+					if (!isEqualToParent(hit.collider, out moveableObject))
+					{   //it's not so return;
+						return;
+					}
+
+					if (moveableObject != null)     //hit object must have MoveableDraw script attached
+					{
+						showInteractMsg = true;
+						//string animBoolNameNum = animBoolName + moveableObject.objectNumber.ToString();
+
+						/*bool isOpen = anim.GetBool(animBoolNameNum); */   //need current state for message.
+												
+						msg = getGuiMsgTask(true);
+
+						if (taskFlag)
+						{
+							//anim.enabled = true;
+							//anim.SetBool(animBoolNameNum, !isOpen);
+							uiHandler.HandleTaskBar(moveableObject.objectNumber);
+							if (uiHandler.barPercent >= 100)
+                            {
+								msg = getGuiMsgTask(false);
+							}
+                            else
+                            {
+								msg = getGuiMsgTask(true);
+							}							
+						}
 					}
 				}
 				else
@@ -156,7 +193,7 @@ namespace LV
 			guiStyle.fontSize = 16;
 			guiStyle.fontStyle = FontStyle.Bold;
 			guiStyle.normal.textColor = Color.white;
-			msg = "Press E/Fire1 to Open";
+			msg = "Press E to Open";
 		}
 
 		private string getGuiMsg(bool isOpen)
@@ -164,14 +201,30 @@ namespace LV
 			string rtnVal;
 			if (isOpen)
 			{
-				rtnVal = "Press E/Fire1 to Close";
+				rtnVal = "Press E to Close";
 			} else
 			{
-				rtnVal = "Press E/Fire1 to Open";
+				rtnVal = "Press E to Open";
 			}
 
 			return rtnVal;
 		}
+
+		private string getGuiMsgTask(bool isOpen)
+		{
+			string rtnVal;
+			if (isOpen && uiHandler.barPercent < 100)
+			{
+				rtnVal = "Hold F to Start Task";
+			}
+			else
+			{
+				rtnVal = "Task Completed Today!";
+			}
+           
+			return rtnVal;
+		}
+
 
 		void OnGUI()
 		{

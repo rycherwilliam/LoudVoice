@@ -5,4 +5,5 @@ public class MoveableObject : MonoBehaviour
 {
 
 	public int objectNumber = 1;
+	public int objectEnergy = 30;
 }
